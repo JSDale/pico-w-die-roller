@@ -2,61 +2,69 @@ import time
 from gfx_pack import GfxPack, SWITCH_A, SWITCH_B, SWITCH_C, SWITCH_D, SWITCH_E
 import random
 
-lowest = 1
-highest = 6
+class DieRoller:
 
-gp = GfxPack()
-display = gp.display
+    def __init__(self):
+        self.set_up()
 
-WIDTH, HEIGHT = display.get_bounds()
-display.set_backlight(0)  # turn off the white component of the backlight
+    def clear(self):
+        self.display.set_pen(0)
+        self.display.clear()
+        self.display.set_pen(self.pen_size)
 
+    def roll(self, lowest, highest):
+        number = random.randint(lowest, highest)
+        return number
 
-# sets up a handy function we can call to clear the screen
-def clear():
-    display.set_pen(0)
-    display.clear()
-    display.set_pen(15)
+    def display_roll(self, rolls):
+        print(f"{self.lowest}, {self.highest}")
+        for i in range(rolls):
+            number = self.roll(self.lowest, self.highest)
+            self.clear()
+            self.display.text(f"{number}", int(self.width/2)-self.pen_size, int(self.height/2)-self.pen_size, 0, 5)
+            self.display.update()
+            time.sleep(0.2)
 
+    def set_die_type(self, upper_value):
+        self.highest = upper_value
+        self.clear()
+        self.display.text(f"D{self.highest}", 0, 0, self.width, 4)
+        self.display.update()
 
-# set up
-display.set_font("bitmap8")
+    def set_up(self):
+        self.lowest = 1
+        self.highest = 6
+        self.pen_size = 15
+        self.width = 0
+        self.height = 0
 
-gp.set_backlight(0, 0, 0, 125)
-clear()
-display.set_pen(15)
-display.text("Press A to roll", 0, 0, WIDTH, 2)
-display.update()
+        self.gp = GfxPack()
+        self.display = self.gp.display
 
-while True:
-    if gp.switch_pressed(SWITCH_A):                       # if a button press is detected...                                          # clear to black
-        gp.set_backlight(255, 0, 0, 0)                    # red, green, blue, white
-        clear()
-        display.text("Button A pressed", 0, 0, WIDTH, 2)  # display some text on the screen
-        display.update()                                  # update the display
-        time.sleep(0.2)
-    elif gp.switch_pressed(SWITCH_B):
-        gp.set_backlight(255, 125, 0, 0)
-        clear()
-        display.text("Button B pressed", 0, 0, WIDTH, 2)
-        display.update()
-        time.sleep(0.2)
-    elif gp.switch_pressed(SWITCH_C):
-        gp.set_backlight(0, 255, 0, 0)
-        clear()
-        display.text("Button C pressed", 0, 0, WIDTH, 2)
-        display.update()
-        time.sleep(0.2)
-    elif gp.switch_pressed(SWITCH_D):
-        gp.set_backlight(0, 0, 255, 0)
-        clear()
-        display.text("Button D pressed", 0, 0, WIDTH, 2)
-        display.update()
-        time.sleep(0.2)
-    elif gp.switch_pressed(SWITCH_E):
-        gp.set_backlight(255, 0, 255, 0)
-        clear()
-        display.text("Button E pressed", 0, 0, WIDTH, 2)
-        display.update()
-        time.sleep(1)
-    time.sleep(0.01)  # this number is how frequently the Pico checks for button presses
+        self.width, self.height = self.display.get_bounds()
+        self.display.set_backlight(0)
+        self.display.set_font("bitmap8")
+
+        self.gp.set_backlight(0, 0, 0, 125)
+        self.clear()
+        self.display.set_pen(self.pen_size)
+        self.display.text("Set at 1 - 6", 0, 40, self.width, 2)
+        self.display.text("Press A to roll", 0, 0, self.width, 2)
+        self.display.update()
+        
+    def main(self):
+        while True:
+            if self.gp.switch_pressed(SWITCH_A):                       
+                self.display_roll(5)
+            elif self.gp.switch_pressed(SWITCH_B):
+                self.set_die_type(6)
+            elif self.gp.switch_pressed(SWITCH_C):
+                self.set_die_type(12)
+            elif self.gp.switch_pressed(SWITCH_D):
+                self.set_die_type(20)
+            elif self.gp.switch_pressed(SWITCH_E):
+                time.sleep(1)
+            time.sleep(0.01)
+
+dr = DieRoller()
+dr.main()
